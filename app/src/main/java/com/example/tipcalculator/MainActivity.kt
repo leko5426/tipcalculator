@@ -1,3 +1,12 @@
+/**
+ * Application : tipCalculator
+ * Ce programme permet de :
+ *  - Saisir un montant de facture
+ *  - Indiquer un pourcentage de pourboire
+ *  - Choisir d’arrondir ou non le montant
+ *  - Activer ou désactiver un mode sombre via un bouton bascule (Switch)
+ */
+
 package com.example.tipcalculator
 
 import android.os.Bundle
@@ -26,9 +35,29 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContent {
-            MaterialTheme {
+
+            var darkModeEnabled by remember { mutableStateOf(false) }
+            val colorScheme = if (darkModeEnabled) darkColorScheme() else lightColorScheme()
+
+            MaterialTheme(colorScheme = colorScheme) {
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    TipTimeLayout()
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(20.dp)
+                            .verticalScroll(rememberScrollState()),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        // 🔘 Switch pour activer/désactiver le mode sombre
+                        DarkModeSwitch(
+                            darkModeEnabled = darkModeEnabled,
+                            onToggle = { darkModeEnabled = it }
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        TipTimeLayout()
+                    }
                 }
             }
         }
@@ -48,35 +77,25 @@ fun TipTimeLayout() {
     val tip = calculateTip(amount, tipPercent, roundUp)
 
     Column(
-        modifier = Modifier
-            .padding(20.dp)
-            .verticalScroll(rememberScrollState()),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             text = "Calcul du pourboire",
-            modifier = Modifier
-                .padding(bottom = 16.dp)
-                .align(Alignment.Start),
+            modifier = Modifier.padding(bottom = 16.dp),
             style = MaterialTheme.typography.headlineSmall
         )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
 
         EditNumberField(
             label = "Montant de la facture",
             iconRes = android.R.drawable.ic_menu_info_details,
             value = amountInput,
             onValueChanged = { amountInput = it },
-            keyboardOptions = KeyboardOptions.Default.copy(
+            keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Number,
                 imeAction = ImeAction.Next
             ),
-            modifier = Modifier
-                .padding(bottom = 16.dp)
-                .fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
         )
 
         EditNumberField(
@@ -84,13 +103,11 @@ fun TipTimeLayout() {
             iconRes = android.R.drawable.ic_menu_sort_by_size,
             value = tipInput,
             onValueChanged = { tipInput = it },
-            keyboardOptions = KeyboardOptions.Default.copy(
+            keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Number,
                 imeAction = ImeAction.Done
             ),
-            modifier = Modifier
-                .padding(bottom = 16.dp)
-                .fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
         )
 
         RoundTheTipRow(
@@ -127,7 +144,6 @@ fun EditNumberField(
         modifier = modifier
     )
 }
-
 @Composable
 fun RoundTheTipRow(
     roundUp: Boolean,
@@ -142,6 +158,26 @@ fun RoundTheTipRow(
         Switch(
             checked = roundUp,
             onCheckedChange = onRoundUpChanged,
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentWidth(Alignment.End)
+        )
+    }
+}
+
+@Composable
+fun DarkModeSwitch(
+    darkModeEnabled: Boolean,
+    onToggle: (Boolean) -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text("Mode sombre")
+        Switch(
+            checked = darkModeEnabled,
+            onCheckedChange = onToggle,
             modifier = Modifier
                 .fillMaxWidth()
                 .wrapContentWidth(Alignment.End)
